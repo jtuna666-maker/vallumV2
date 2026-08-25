@@ -7,6 +7,7 @@ import { projectMembers, projects, users } from "@/db/schema";
 import { claimOrphans } from "@/lib/access";
 import { saveSession } from "@/lib/auth";
 import { ensureDemoSeed } from "@/lib/seed";
+import { assertSafeProductionMode } from "@/lib/mode";
 
 let bootstrapped = false;
 
@@ -22,6 +23,12 @@ let bootstrapped = false;
  * health checks) to avoid surprise cookie writes in automation.
  */
 export async function ensureBootstrap(canWriteCookies = false): Promise<void> {
+  // Fail fast before any ambient adoption / orphan claiming can run: a
+  // production deploy must never default into the shared demo household.
+  // Thrown here (outside the try below) so a misconfig surfaces as a loud
+  // 500 instead of being logged and swallowed.
+  assertSafeProductionMode();
+
   if (bootstrapped) return;
   bootstrapped = true;
   try {
