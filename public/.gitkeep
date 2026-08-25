@@ -1,0 +1,2 @@
+# Keeps the public/ directory present for Capacitor's webDir.
+# Static assets (icons, images) for the web app go here.
