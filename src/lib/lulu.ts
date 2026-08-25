@@ -15,6 +15,15 @@ import "server-only";
 const PROD = "https://api.lulu.com";
 const SANDBOX = "https://api.sandbox.lulu.com";
 
+// The sandbox is the default (anything other than "0"), so a production
+// deploy that forgets LULU_SANDBOX=0 would silently "fulfill" every order in
+// the sandbox — paid, but no book ever printed. Make that state loud.
+if (process.env.NODE_ENV === "production" && process.env.LULU_SANDBOX !== "0") {
+  console.error(
+    "[vellum] LULU_SANDBOX is not \"0\" in production: print orders would go to the Lulu sandbox and no book would ever be printed. Set LULU_SANDBOX=0 before going live."
+  );
+}
+
 function baseUrl(): string {
   return process.env.LULU_SANDBOX === "0" ? PROD : SANDBOX;
 }

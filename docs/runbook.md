@@ -69,7 +69,7 @@ Spine width is computed from the real page count: `pages / 400 PPI`, plus
 | `RESEND_API_KEY` (+ `RESEND_FROM`) | Email delivery for sign-in codes. Without it, codes log to the server console and appear in the dev banner. |
 | `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (+ optional `POLISH_MODEL`) | Model-powered prose polish and follow-up question generation; deterministic fallbacks run without it. |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Hardcover checkout + payment confirmation. |
-| `LULU_CLIENT_KEY` / `LULU_CLIENT_SECRET` / `LULU_SANDBOX=1` | Print-on-demand fulfillment for paid hardcovers. |
+| `LULU_CLIENT_KEY` / `LULU_CLIENT_SECRET` / `LULU_SANDBOX=0` | Print-on-demand fulfillment for paid hardcovers. `LULU_SANDBOX` must be `0` in production — `1` (the default) sends orders to the Lulu sandbox, which marks them fulfilled but never prints a book. |
 
 ## Data note (sandboxes)
 
