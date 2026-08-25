@@ -79,9 +79,8 @@ and `lib/seed.ts` re-plants the showcase memoir with content, photo chapter,
 and a live share link. Real deployments should use managed Postgres with
 persistence (Neon, Supabase, RDS).
 
-## Deploy (web now, app rides along)
+## Deploy
 
 1. Create Postgres, run `npx drizzle-kit push` against it.
-2. Set env vars per the mode above (`NEXT_PUBLIC_*` not needed — the iOS app reads `VELLUM_WEB_URL` at build time).
+2. Set the env vars per the mode above **before** `next build` (`NEXT_PUBLIC_APP_URL` is baked into the prerendered metadata, sitemap, and robots at build time).
 3. Deploy the Next.js app (Vercel or any Node host).
-4. On your Mac: `VELLUM_WEB_URL=https://your-url npx cap sync ios` → open `ios/App/App.xcworkspace` → archive → TestFlight. `ITSAppUsesNonExemptEncryption=NO` is already set.

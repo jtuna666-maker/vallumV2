@@ -21,7 +21,6 @@ import {
   quote,
   type EditionId,
 } from "@/lib/pricing";
-import { hapticConfirm, hapticTap } from "@/lib/native";
 
 type Props = {
   projectId: string;
@@ -41,7 +40,6 @@ export default function EditionPicker({ projectId, onClose }: Props) {
 
   function bump(delta: number) {
     setQty((n) => Math.min(500, Math.max(1, n + delta)));
-    void hapticTap();
   }
 
   async function submit() {
@@ -49,7 +47,6 @@ export default function EditionPicker({ projectId, onClose }: Props) {
     setError(null);
 
     if (selected === "digital") {
-      void hapticConfirm();
       window.open(
         `/api/pdf/interior/${projectId}.pdf?edition=digital&dl=1`,
         "_blank",
@@ -75,7 +72,6 @@ export default function EditionPicker({ projectId, onClose }: Props) {
         return;
       }
       if (data.redirect) {
-        void hapticConfirm();
         router.push(data.redirect);
         router.refresh();
         return;
@@ -127,8 +123,9 @@ export default function EditionPicker({ projectId, onClose }: Props) {
                   setSelected(id);
                   // Quantity only applies to printed copies — reset it when a
                   // digital edition is chosen.
+                  // Quantity only applies to printed copies — reset it when a
+                  // digital edition is chosen.
                   if (!EDITIONS[id].physical) setQty(1);
-                  void hapticTap();
                 }}
                 className={`relative flex h-full cursor-pointer flex-col rounded-xl border p-5 text-left transition ${
                   active
@@ -213,7 +210,6 @@ export default function EditionPicker({ projectId, onClose }: Props) {
                         key={n}
                         onClick={() => {
                           setQty(n);
-                          void hapticTap();
                         }}
                         className="cursor-pointer rounded-full border border-line px-2.5 py-1 text-[0.65rem] font-semibold text-ink-soft transition hover:border-bronze hover:text-bronze-deep"
                       >

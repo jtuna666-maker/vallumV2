@@ -34,7 +34,6 @@ import {
   startDictation,
   type DictationHandle,
 } from "@/lib/speech";
-import { hapticConfirm, hapticTap } from "@/lib/native";
 import SharePanel from "@/components/share-panel";
 
 type Status = "unwritten" | "drafting" | "complete";
@@ -200,7 +199,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
   function setStatus(cId: string, status: Status) {
     setStatuses((prev) => ({ ...prev, [cId]: status }));
     void patch(`/api/chapters/${cId}`, { status });
-    if (status === "complete") void hapticConfirm();
   }
 
   function moveChapter(cId: string, dir: -1 | 1) {
@@ -228,7 +226,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
     );
     next.sort((x, y) => x.orderIndex - y.orderIndex);
     setOrdered(next);
-    void hapticTap();
 
     void fetch("/api/chapters/reorder", {
       method: "POST",
@@ -262,7 +259,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
           [active.id]: [...(prev[active.id] ?? []), { id: data.question.id, text: data.question.text }],
         }));
         setAnswers((prev) => ({ ...prev, [data.question.id]: "" }));
-        void hapticTap();
       }
     } finally {
       setAskingMore(false);
@@ -283,7 +279,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
         const data = (await res.json()) as { polished?: string };
         if (data.polished && data.polished !== text) {
           setContent(active.id, data.polished);
-          void hapticConfirm();
         }
       }
     } finally {
@@ -319,7 +314,7 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
     router.refresh();
   }
 
-  /* ---------- voice (native SFSpeechRecognizer in the iOS shell, Web Speech API in browsers) ---------- */
+  /* ---------- voice (Web Speech API) ---------- */
   async function toggleMic(qId: string) {
     const wasListeningToThis = listeningFor === qId;
 
@@ -328,7 +323,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
       const active = dictationRef.current;
       dictationRef.current = null;
       await active.stop();
-      void hapticTap();
     }
     if (wasListeningToThis) return;
 
@@ -351,7 +345,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
 
     dictationRef.current = handle;
     setListeningFor(qId);
-    void hapticTap();
   }
 
   useEffect(() => {
@@ -865,7 +858,6 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
           onClose={() => setShowAddChapter(false)}
           onCreated={() => {
             setShowAddChapter(false);
-            void hapticConfirm();
             router.refresh();
           }}
         />

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Check, Share2 } from "lucide-react";
-import { isNativeApp } from "@/lib/native";
 
 export default function ShareButton({
   title,
@@ -19,25 +18,20 @@ export default function ShareButton({
     const url = shareToken
       ? `${window.location.origin}/share/${shareToken}`
       : window.location.href;
-    try {
-      if (isNativeApp()) {
-        const { Share } = await import("@capacitor/share");
-        await Share.share({ title, text, url, dialogTitle: "Share this memoir" });
-        return;
-      }
-      if (navigator.share) {
+    if (navigator.share) {
+      try {
         await navigator.share({ title, text, url });
         return;
-      }
-      throw new Error("no share api");
-    } catch {
-      try {
-        await navigator.clipboard.writeText(url);
-        setDone(true);
-        setTimeout(() => setDone(false), 2200);
       } catch {
-        /* clipboard denied */
+        /* cancelled or failed — fall back to copying the link */
       }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setDone(true);
+      setTimeout(() => setDone(false), 2200);
+    } catch {
+      /* clipboard denied */
     }
   }
 

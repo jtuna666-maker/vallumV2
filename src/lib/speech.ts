@@ -1,12 +1,7 @@
 "use client";
 
-import { Capacitor } from "@capacitor/core";
-import { SpeechRecognition } from "@capacitor-community/speech-recognition";
-
 /**
- * Unified dictation layer.
- * - Inside the iOS shell (Capacitor) → native SFSpeechRecognizer via plugin.
- * - In any browser → Web Speech API when available.
+ * Dictation layer backed by the browser Web Speech API.
  *
  * Callback semantics:
  * - onPreview(text): live interim transcript of the CURRENT utterance.
@@ -23,8 +18,6 @@ export type DictationCallbacks = {
 export type DictationHandle = {
   stop: () => Promise<void>;
 };
-
-/* ---------------- Web Speech API path ---------------- */
 
 type WebRecognition = {
   continuous: boolean;
@@ -50,7 +43,11 @@ function getWebCtor(): (new () => WebRecognition) | null {
     | null;
 }
 
-function startWeb(cb: DictationCallbacks): DictationHandle | null {
+export async function checkSpeechSupport(): Promise<boolean> {
+  return getWebCtor() !== null;
+}
+
+export async function startDictation(cb: DictationCallbacks): Promise<DictationHandle | null> {
   const Ctor = getWebCtor();
   if (!Ctor) return null;
 
@@ -91,104 +88,4 @@ function startWeb(cb: DictationCallbacks): DictationHandle | null {
       finish();
     },
   };
-}
-
-/* ---------------- Native (Capacitor) path ---------------- */
-
-async function startNative(cb: DictationCallbacks): Promise<DictationHandle | null> {
-  try {
-    // Android's on-device popup flow returns matches from start(); we use the
-    // streaming path on both platforms for a consistent, silent UX.
-    let lastHeard = "";
-    let ended = false;
-
-    const finish = async (commit: boolean) => {
-      if (ended) return;
-      ended = true;
-      try {
-        await SpeechRecognition.removeAllListeners();
-      } catch {
-        /* noop */
-      }
-      if (commit && lastHeard) cb.onCommit(lastHeard);
-      cb.onEnd();
-    };
-
-    await SpeechRecognition.removeAllListeners();
-    await SpeechRecognition.addListener(
-      "partialResults",
-      (data: { matches: string[] }) => {
-        const text = data.matches?.[0]?.trim() ?? "";
-        if (!text) return;
-        lastHeard = text;
-        cb.onPreview?.(text);
-      }
-    );
-    await SpeechRecognition.addListener(
-      "listeningState",
-      (data: { status: "started" | "stopped" }) => {
-        if (data.status === "stopped") void finish(true);
-      }
-    );
-
-    await SpeechRecognition.start({
-      language: "en-US",
-      partialResults: true,
-      popup: false,
-      maxResults: 1,
-    });
-
-    return {
-      stop: async () => {
-        try {
-          await SpeechRecognition.stop();
-        } catch {
-          /* already stopped */
-        }
-        await finish(true);
-      },
-    };
-  } catch {
-    return null;
-  }
-}
-
-/* ---------------- Public API ---------------- */
-
-function isNative(): boolean {
-  try {
-    return Capacitor.isNativePlatform();
-  } catch {
-    return false;
-  }
-}
-
-export async function checkSpeechSupport(): Promise<boolean> {
-  if (isNative()) {
-    try {
-      const { available } = await SpeechRecognition.available();
-      return available;
-    } catch {
-      return false;
-    }
-  }
-  return getWebCtor() !== null;
-}
-
-/** Requests permissions natively before starting; resolves null if unavailable/denied. */
-export async function startDictation(
-  cb: DictationCallbacks
-): Promise<DictationHandle | null> {
-  if (isNative()) {
-    try {
-      const { available } = await SpeechRecognition.available();
-      if (!available) return null;
-      const perms = await SpeechRecognition.requestPermissions();
-      if (perms.speechRecognition !== "granted") return null;
-      return await startNative(cb);
-    } catch {
-      return null;
-    }
-  }
-  return startWeb(cb);
 }
