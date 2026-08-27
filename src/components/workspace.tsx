@@ -698,43 +698,47 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
               <ImagePlus className="size-4 text-bronze" />
             </div>
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              Optional — one image per chapter, typeset into your printed book beneath the chapter
-              title.
+              Optional — one image per chapter, typeset into your printed book beneath the chapter title.
             </p>
             <div className="mt-5 rounded-2xl border border-line bg-vellum p-6 shadow-lift">
               <div className="grid items-start gap-5 sm:grid-cols-[132px_1fr]">
-                <div className="grid aspect-[4/3] place-items-center overflow-hidden rounded-lg border border-dashed border-line bg-paper-deep/50 text-ink-faint">
+                <label className="group relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-line bg-paper-deep/50 text-ink-faint transition hover:border-bronze">
                   {photos[active.id]?.url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={photos[active.id].url}
-                      alt={photos[active.id].caption || "Chapter photograph"}
-                      className="h-full w-full object-cover"
-                    />
+                    <img src={photos[active.id].url} alt={photos[active.id].caption || "Chapter photograph"} className="h-full w-full object-cover" />
                   ) : (
-                    <ImagePlus className="size-6" strokeWidth={1.4} />
+                    <div className="flex flex-col items-center gap-1.5 p-2 text-center">
+                      <ImagePlus className="size-6" strokeWidth={1.4} />
+                      <span className="text-[0.62rem] font-medium text-ink-soft">Upload or Snap</span>
+                    </div>
                   )}
-                </div>
-                <div className="space-y-3">
-                  <input
-                    className="field"
-                    placeholder="Photo URL (https://…)"
-                    value={photos[active.id]?.url ?? ""}
-                    onChange={(e) =>
-                      setPhoto(active.id, e.target.value, photos[active.id]?.caption ?? "")
-                    }
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileSelect(active.id, file);
+                    }} 
                   />
-                  <input
-                    className="field"
-                    placeholder="Caption — “Dad's truck, the summer it caught fire.”"
-                    value={photos[active.id]?.caption ?? ""}
-                    maxLength={300}
-                    onChange={(e) =>
-                      setPhoto(active.id, photos[active.id]?.url ?? "", e.target.value)
-                    }
+                </label>
+                <div className="space-y-3">
+                  <input 
+                    className="field" 
+                    placeholder="Or paste Photo URL (https://…)" 
+                    value={photos[active.id]?.url ?? ""} 
+                    onChange={(e) => setPhoto(active.id, e.target.value, photos[active.id]?.caption ?? "")} 
+                  />
+                  <input 
+                    className="field" 
+                    placeholder="Caption — “Dad's truck, the summer it caught fire.”" 
+                    value={photos[active.id]?.caption ?? ""} 
+                    maxLength={300} 
+                    onChange={(e) => setPhoto(active.id, photos[active.id]?.url ?? "", e.target.value)} 
                   />
                   <p className="text-[0.68rem] text-ink-faint">
-                    Leave empty for a text-only chapter. Saves automatically.
+                    Tap the box to pick a file or snap a picture from your phone. Saves automatically.
                   </p>
                 </div>
               </div>
