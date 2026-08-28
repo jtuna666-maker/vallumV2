@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // Retrieve custom metadata you passed during checkout (like the book PDF URL)
     const { projectId, pdfUrl } = session.metadata || {};
-    const shippingDetails = session.shipping_details;
+    const shippingDetails = session.collected_information?.shipping_details;
 
     console.log(`Payment successful for project ${projectId}. Triggering print API...`);
 
