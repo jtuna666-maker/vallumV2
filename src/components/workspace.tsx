@@ -733,11 +733,11 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
                     onChange={(e) => setPhoto(active.id, e.target.value, photos[active.id]?.caption ?? "")} 
                   />
                   <input 
-                    <input className="field" />
-                    placeholder="Caption — “Dad's truck, the summer it caught fire.”" 
-                    value={photos[active.id]?.caption ?? ""} 
-                    maxLength={300} 
-                    onChange={(e) => setPhoto(active.id, photos[active.id]?.url ?? "", e.target.value)} 
+                    className="field" 
+                    placeholder="Caption — “Dad's truck, the summer it caught fire.”"
+                    value={photos[active.id]?.caption ?? ""}
+                    maxLength={300}
+                    onChange={(e) => setPhoto(active.id, photos[active.id]?.url ?? "", e.target.value)}
                   />
                   <p className="text-[0.68rem] text-ink-faint">
                     Tap the box to pick a file or snap a picture from your phone. Saves automatically.
