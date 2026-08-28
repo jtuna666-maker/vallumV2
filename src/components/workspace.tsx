@@ -723,7 +723,7 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
                         const url = URL.createObjectURL(file);
                         setPhoto(active.id, url, photos[active.id]?.caption ?? "");
                       }
-                    }}                  
+                    }} />                  
                 </label>
                 <div className="space-y-3">
                   <input 
