@@ -1,121 +1,77 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { printOrders } from "@/db/schema";
-import { constructWebhookEvent } from "@/lib/billing";
-import { createPrintJob, isLuluConfigured, type LuluAddress } from "@/lib/lulu";
-import { projects } from "@/db/schema";
-import { printKey } from "@/lib/pdf/source";
+import Stripe from "stripe";
 
-export const dynamic = "force-dynamic";
+// Initialize Stripe with your secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2023-10-16",
+});
 
-/** Stripe → VELLUM: payment confirmation, then print-on-demand fulfillment. */
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+
 export async function POST(req: Request) {
-  const signature = req.headers.get("stripe-signature");
-  if (!signature) {
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-  }
+  const body = await req.text();
+  const signature = headers().get("Stripe-Signature") as string;
 
-  const raw = await req.text();
-  let event: Awaited<ReturnType<typeof constructWebhookEvent>>;
+  let event: Stripe.Event;
+
+  // 1. Verify the ping actually came from Stripe
   try {
-    event = await constructWebhookEvent(raw, signature);
-  } catch (err) {
-    console.warn("[vellum] webhook signature rejected:", err);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (err: any) {
+    console.error(`Webhook signature verification failed: ${err.message}`);
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
+  // 2. Listen for a successful checkout
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as {
-      id: string;
-      metadata?: { orderId?: string };
-      customer_details?: {
-        email?: string;
-        name?: string;
-        address?: {
-          line1?: string;
-          line2?: string | null;
-          city?: string;
-          state?: string;
-          postal_code?: string;
-          country?: string;
-        };
-      };
-    };
+    const session = event.data.object as Stripe.Checkout.Session;
 
-    const sessionId = session.id;
-    const orderIdFromMeta = session.metadata?.orderId ?? "";
+    // Retrieve custom metadata you passed during checkout (like the book PDF URL)
+    const { projectId, pdfUrl } = session.metadata || {};
+    const shippingDetails = session.shipping_details;
 
-    const [order] = await db
-      .select()
-      .from(printOrders)
-      .where(eq(printOrders.stripeSessionId, sessionId))
-      .limit(1);
+    console.log(`Payment successful for project ${projectId}. Triggering print API...`);
 
-    const targetId = order?.id ?? orderIdFromMeta;
-    if (targetId) {
-      const addr = session.customer_details?.address;
-      const [updated] = await db
-        .update(printOrders)
-        .set({
-          status: "paid",
-          email: session.customer_details?.email ?? order?.email ?? "",
-          shipName: session.customer_details?.name ?? "",
-          shipLine1: addr?.line1 ?? "",
-          shipLine2: addr?.line2 ?? "",
-          shipCity: addr?.city ?? "",
-          shipState: addr?.state ?? "",
-          shipPostal: addr?.postal_code ?? "",
-          shipCountry: addr?.country ?? "",
-          updatedAt: new Date(),
-        })
-        .where(eq(printOrders.id, targetId))
-        .returning();
+    // 3. Send the order to Lulu (or Bookvault)
+    try {
+      const luluResponse = await fetch("https://api.lulu.com/print-jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.LULU_API_TOKEN}`,
+        },
+        body: JSON.stringify({
+          contact_email: session.customer_details?.email,
+          line_items: [{
+            title: "VELLUM Memoir",
+            file_url: pdfUrl,
+            quantity: 1,
+            pod_package_id: "0600X0900BWSTDPB060UW444MXX" // Example Lulu print specs
+          }],
+          shipping_address: {
+            name: shippingDetails?.name,
+            street1: shippingDetails?.address?.line1,
+            street2: shippingDetails?.address?.line2,
+            city: shippingDetails?.address?.city,
+            state: shippingDetails?.address?.state,
+            postcode: shippingDetails?.address?.postal_code,
+            country: shippingDetails?.address?.country,
+          },
+          shipping_level: "MAIL", 
+        }),
+      });
 
-      if (updated && isLuluConfigured()) {
-        try {
-          const [project] = await db
-            .select()
-            .from(projects)
-            .where(eq(projects.id, updated.projectId));
-          if (project) {
-            const origin = new URL(req.url).origin;
-            const address: LuluAddress = {
-              name: updated.shipName || project.authorName,
-              street1: updated.shipLine1,
-              street2: updated.shipLine2,
-              city: updated.shipCity,
-              stateCode: updated.shipState,
-              postcode: updated.shipPostal,
-              countryCode: updated.shipCountry || "US",
-            };
-            // Signed, sessionless URLs so the print vendor can fetch the
-            // print-ready files directly.
-            const k = printKey(project.id);
-            const ed = updated.edition === "softcover" ? "softcover" : "heirloom";
-            const jobId = await createPrintJob({
-              orderId: updated.id,
-              title: project.title,
-              authorName: project.authorName,
-              contactEmail: updated.email || session.customer_details?.email || "",
-              address,
-              quantity: updated.quantity || 1,
-              binding: ed,
-              interiorUrl: `${origin}/api/pdf/interior/${project.id}.pdf?edition=${ed}&k=${k}`,
-              coverUrl: `${origin}/api/pdf/cover/${project.id}.pdf?edition=${ed}&k=${k}`,
-            });
-            await db
-              .update(printOrders)
-              .set({ luluJobId: jobId, status: "fulfilled", updatedAt: new Date() })
-              .where(eq(printOrders.id, updated.id));
-          }
-        } catch (err) {
-          // Payment is safe; fulfillment can retry manually. Never fail the webhook.
-          console.error("[vellum] lulu fulfillment failed:", err);
-        }
+      if (!luluResponse.ok) {
+        throw new Error("Failed to send order to Lulu");
       }
+    } catch (error) {
+      console.error("Fulfillment error:", error);
+      // Stripe will retry the webhook if you return an error status
+      return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });
     }
   }
 
-  return NextResponse.json({ received: true });
+  // 4. Tell Stripe everything is good
+  return NextResponse.json({ received: true }, { status: 200 });
 }
