@@ -733,7 +733,7 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
                     onChange={(e) => setPhoto(active.id, e.target.value, photos[active.id]?.caption ?? "")} 
                   />
                   <input 
-                    className="field" 
+                    <input className="field" />
                     placeholder="Caption — “Dad's truck, the summer it caught fire.”" 
                     value={photos[active.id]?.caption ?? ""} 
                     maxLength={300} 
