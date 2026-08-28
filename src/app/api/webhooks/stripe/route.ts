@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -11,8 +11,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = headers().get("Stripe-Signature") as string;
-
+  const signature = req.headers.get("stripe-signature") as string;
   let event: Stripe.Event;
 
   // 1. Verify the ping actually came from Stripe
