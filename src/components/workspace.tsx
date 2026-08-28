@@ -719,9 +719,11 @@ export default function Workspace({ detail }: { detail: ProjectDetail }) {
                     className="hidden" 
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) handleFileSelect(active.id, file);
-                    }} 
-                  />
+                      if (file) {
+                        const url = URL.createObjectURL(file);
+                        setPhoto(active.id, url, photos[active.id]?.caption ?? "");
+                      }
+                    }}                  
                 </label>
                 <div className="space-y-3">
                   <input 
