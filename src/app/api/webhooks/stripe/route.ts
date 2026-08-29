@@ -3,11 +3,10 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2026-07-29.dahlia" as any,
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "dummy_key", {
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
 export async function POST(req: Request) {
   const body = await req.text();
