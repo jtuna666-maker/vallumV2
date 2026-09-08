@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Fraunces, Inter } from "next/font/google";
 import { SITE } from "@/config/site";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -69,7 +70,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="bg-paper text-ink antialiased" suppressHydrationWarning>{children}</body>
+      <body className="bg-paper text-ink antialiased" suppressHydrationWarning>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
