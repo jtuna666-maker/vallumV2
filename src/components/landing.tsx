@@ -818,6 +818,45 @@ function Footer() {
   );
 }
 
+/* ---------------- Creator Story ---------------- */
+function CreatorStory() {
+  return (
+    <section className="grain relative border-y border-line bg-paper-deep/50 py-28">
+      <div className="mx-auto max-w-6xl px-5 grid lg:grid-cols-2 gap-16 items-center">
+        
+        {/* Profile Image Column */}
+        <Reveal className="relative aspect-square max-w-md mx-auto rounded-full border border-line bg-vellum flex items-center justify-center overflow-hidden shadow-lift">
+          {/* REPLACE THE SRC URL BELOW with your photo's direct link */}
+          <img 
+            src="https://your-image-host.com/path/to/jesse.jpg" 
+            alt="Jesse, Creator of Vellum" 
+            className="w-full h-full object-cover" 
+          />
+        </Reveal>
+
+        {/* Text Column */}
+        <Reveal delay={0.2}>
+          <Eyebrow>A message from the creator</Eyebrow>
+          <h2 className="display mt-4 text-4xl font-medium md:text-5xl">
+            Some stories have <span className="italic text-bronze-deep">expiration dates.</span>
+          </h2>
+          <div className="prose-book mt-7 max-w-xl text-[1.02rem] leading-relaxed text-ink-soft space-y-4">
+            <p>
+              Hi, I'm Jesse. Like many of you, I've always been drawn to the history locked in people's memories.
+            </p>
+            <p>
+              But some stories I would have given anything to hear are now permanently beyond my reach. It's an absence that has stuck with me—a piece of family heritage lost forever just because nobody wrote it down.
+            </p>
+            <p>
+              That’s why I created Vellum. Not as another complicated project, but as a simple, thoughtful environment where any voice can quickly and easily build a lasting memoir. Every life has a spine; this just helps you typeset it.
+            </p>
+          </div>
+        </Reveal>
+
+      </div>
+    </section>
+  );
+}
 export default function Landing() {
   return (
     <main>
@@ -830,6 +869,7 @@ export default function Landing() {
       <BookSection />
       <Pricing />
       <Testimonials />
+      <CreatorStory />
       <Faq />
       <FinalCta />
       <Footer />
