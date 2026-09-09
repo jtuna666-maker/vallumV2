@@ -84,8 +84,8 @@ export default function EditionPicker({ projectId, onClose }: Props) {
     }
   }
 
-  return (
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/60 p-4 py-12 backdrop-blur-sm" onClick={onClose}>
+return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/60 p-4 py-16 backdrop-blur-sm" onClick={onClose}>
       <div className="mx-auto w-full max-w-3xl rounded-2xl border border-line bg-vellum p-7 shadow-book sm:p-9" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-6">
           <div>
