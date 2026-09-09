@@ -84,15 +84,16 @@ export default function EditionPicker({ projectId, onClose }: Props) {
     }
   }
 
-  return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-ink/60 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="nice-scroll max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-line bg-vellum p-7 shadow-book sm:p-9"
-        onClick={(e) => e.stopPropagation()}
-      >
+  return 
+      <div 
+            className="fixed inset-0 z-50 overflow-y-auto bg-ink/60 p-4 sm:p-6 md:p-8 backdrop-blur-sm flex min-h-full items-center justify-center" 
+            onClick={onClose}
+       >
+      <div 
+        className="nice-scroll my-auto w-full max-w-3xl overflow-y-auto rounded-2xl border border-line bg-vellum p-7 shadow-book sm:p-9" 
+        onClick={(e) => e.
+          stopPropagation()}
+        >
         <div className="flex items-start justify-between gap-6">
           <div>
             <p className="smallcaps text-[0.65rem] font-semibold text-bronze-deep">
