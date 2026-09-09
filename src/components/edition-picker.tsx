@@ -84,7 +84,7 @@ export default function EditionPicker({ projectId, onClose }: Props) {
     }
   }
 
-  return 
+  return (
       <div 
             className="fixed inset-0 z-50 overflow-y-auto bg-ink/60 p-4 sm:p-6 md:p-8 backdrop-blur-sm flex min-h-full items-center justify-center" 
             onClick={onClose}
