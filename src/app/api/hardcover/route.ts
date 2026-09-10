@@ -15,7 +15,7 @@ const schema = z.object({
 });
 
 /**
- * GET  — latest non-pending order for a project (drives the status chip).
+ * GET  — latest active/completed order for a project (drives the status chip).
  * POST — start an order. Stripe Checkout when configured; otherwise a
  *        recorded reservation so the flow is always demonstrable.
  */
@@ -32,7 +32,13 @@ export async function GET(req: Request) {
   const [order] = await db
     .select()
     .from(printOrders)
-    .where(and(eq(printOrders.projectId, projectId), ne(printOrders.status, "pending")))
+    .where(
+      and(
+        eq(printOrders.projectId, projectId),
+        ne(printOrders.status, "pending"),
+        ne(printOrders.status, "failed")
+      )
+    )
     .orderBy(desc(printOrders.createdAt))
     .limit(1);
 
