@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
@@ -64,10 +65,14 @@ function Nav() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line/60 bg-paper/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-md bg-ink text-paper">
-            <BookOpen className="size-4" strokeWidth={1.8} />
-          </span>
-          <span className="display text-xl font-semibold tracking-tight">VELLUM</span>
+          <Image
+            src="/brand/vellum-logo.png"
+            alt="Vellum — Craft Your Legacy"
+            width={512}
+            height={279}
+            priority
+            className="h-12 w-auto mix-blend-multiply"
+          />
         </Link>
         <nav className="hidden items-center gap-8 text-[0.82rem] font-medium text-ink-soft md:flex">
           <a href="#how" className="transition hover:text-ink">How it works</a>
@@ -801,10 +806,13 @@ function Footer() {
     <footer className="border-t border-paper/10 bg-ink px-5 py-10 text-paper/50">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-[0.78rem] sm:flex-row">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-7 place-items-center rounded-md bg-paper/10">
-            <BookOpen className="size-3.5" />
-          </span>
-          <span className="display text-base font-semibold text-paper/80">VELLUM</span>
+          <Image
+            src="/brand/vellum-logo.png"
+            alt="Vellum — Craft Your Legacy"
+            width={512}
+            height={279}
+            className="h-14 w-auto rounded-sm opacity-90"
+          />
           <span>— a private memoir studio</span>
         </div>
         <div className="flex items-center gap-6">

@@ -20,7 +20,7 @@ export const RULE = "#d8cbb2";
 export const CREAM = "#fbf7ee";
 
 export const FOOTER_TEXT =
-  "Typeset in VELLUM — Order the heirloom hardcover keepsake at vellum.com";
+  "Typeset in VELLUM — Order the heirloom hardcover keepsake at myvellum.vercel.app";
 
 export type Margins = {
   top: number;

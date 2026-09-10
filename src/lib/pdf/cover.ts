@@ -1,5 +1,6 @@
 import "server-only";
 import PDFDocument from "pdfkit";
+import path from "path";
 import type { Project } from "@/db/schema";
 import {
   Doc,
@@ -30,6 +31,12 @@ const HINGE = 0.03;
 /** Case wrap needs bleed to fold around the boards. */
 const WRAP_HARD = 0.75;
 const BLEED_SOFT = 0.125;
+const BRAND_LOCKUP = path.join(
+  process.cwd(),
+  "public",
+  "brand",
+  "vellum-logo.png"
+);
 
 export type Binding = "softcover" | "hardcover";
 
@@ -98,7 +105,7 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
       Title: `${input.project.title} — cover`,
       Author: input.project.authorName,
       Creator: "VELLUM",
-      Producer: "VELLUM — vellum.com",
+      Producer: "VELLUM — myvellum.vercel.app",
     },
   }) as Doc;
 
@@ -210,6 +217,17 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
     .lineWidth(0.7)
     .stroke(cloth.foil);
 
+  // A small publisher's bookplate keeps the full brand lockup faithful to
+  // the supplied artwork without competing with the memoir title up front.
+  const brandWidth = 1.8 * PT;
+  const brandHeight = brandWidth * (279 / 512);
+  doc.image(
+    BRAND_LOCKUP,
+    backX + (TRIM_W - brandWidth) / 2,
+    wrap + TRIM_H - 2.18 * PT,
+    { fit: [brandWidth, brandHeight], align: "center" }
+  );
+
   doc.font(SERIF).fontSize(8).fillColor(cloth.foil);
   doc.text(
     `Typeset in VELLUM · ${spec.pages} pages · spine ${spec.spineIn.toFixed(3)}"`,
@@ -220,7 +238,7 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
 
   doc.font(SERIF).fontSize(7).fillColor("#efe6d0");
   doc.fillOpacity(0.5);
-  doc.text("vellum.com", backX + PT * 0.5, wrap + TRIM_H - 0.72 * PT, {
+  doc.text("myvellum.vercel.app", backX + PT * 0.5, wrap + TRIM_H - 0.72 * PT, {
     width: TRIM_W - PT,
     align: "center",
     characterSpacing: 1.5,
