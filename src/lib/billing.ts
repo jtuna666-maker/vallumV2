@@ -49,6 +49,10 @@ export async function createBookCheckout(args: {
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    // Stripe accounts with Managed Payments enabled reject shipping address
+    // collection. Physical-book orders need that address, so use standard
+    // Checkout for this session regardless of the account-level default.
+    managed_payments: { enabled: false },
     customer_email: args.email || undefined,
     shipping_address_collection: {
       allowed_countries: ["US", "CA", "GB", "AU", "NZ", "IE"],
