@@ -125,6 +125,9 @@ export async function POST(req: Request) {
       coverUrl: `${origin}/api/pdf/cover/${projectId}.pdf?${pdfQuery}`,
       quantity: order.quantity,
       binding: edition,
+      // A Stripe test event must never create a live print order, even if the
+      // deployment's LULU_SANDBOX setting is accidentally configured for prod.
+      environment: event.livemode ? undefined : "sandbox",
     });
 
     if (!luluJobId) throw new Error("Lulu created a print job without returning its ID");

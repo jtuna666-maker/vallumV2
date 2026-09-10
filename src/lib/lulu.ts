@@ -24,7 +24,11 @@ if (process.env.NODE_ENV === "production" && process.env.LULU_SANDBOX !== "0") {
   );
 }
 
-function baseUrl(): string {
+export type LuluEnvironment = "sandbox" | "production";
+
+function baseUrl(environment?: LuluEnvironment): string {
+  if (environment === "sandbox") return SANDBOX;
+  if (environment === "production") return PROD;
   return process.env.LULU_SANDBOX === "0" ? PROD : SANDBOX;
 }
 
@@ -42,13 +46,15 @@ const HARDCOVER_PACKAGE =
 const SOFTCOVER_PACKAGE =
   process.env.LULU_PACKAGE_ID_SOFT ?? "0600X0900BWSTDPB060UW444MXX";
 
-let cachedToken: { token: string; expiresAt: number } | null = null;
+const cachedTokens = new Map<string, { token: string; expiresAt: number }>();
 
-async function getToken(): Promise<string> {
+async function getToken(environment?: LuluEnvironment): Promise<string> {
+  const apiBase = baseUrl(environment);
+  const cachedToken = cachedTokens.get(apiBase);
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) {
     return cachedToken.token;
   }
-  const res = await fetch(`${baseUrl()}/auth/realms/glasstree/protocol/openid-connect/token`, {
+  const res = await fetch(`${apiBase}/auth/realms/glasstree/protocol/openid-connect/token`, {
     method: "POST",
     headers: {
       Authorization:
@@ -62,11 +68,11 @@ async function getToken(): Promise<string> {
   });
   if (!res.ok) throw new Error(`Lulu auth failed: ${res.status}`);
   const data = (await res.json()) as { access_token: string; expires_in: number };
-  cachedToken = {
+  cachedTokens.set(apiBase, {
     token: data.access_token,
     expiresAt: Date.now() + data.expires_in * 1000,
-  };
-  return cachedToken.token;
+  });
+  return data.access_token;
 }
 
 export type LuluAddress = {
@@ -90,9 +96,11 @@ export async function createPrintJob(args: {
   coverUrl: string;
   quantity?: number;
   binding?: "softcover" | "heirloom";
+  /** Force a target for this job. Test Stripe events always pass "sandbox". */
+  environment?: LuluEnvironment;
 }): Promise<string> {
-  const token = await getToken();
-  const res = await fetch(`${baseUrl()}/print-jobs/`, {
+  const token = await getToken(args.environment);
+  const res = await fetch(`${baseUrl(args.environment)}/print-jobs/`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
