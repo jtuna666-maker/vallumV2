@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { getProjectDetail } from "@/lib/projects";
@@ -130,6 +131,14 @@ export default async function PreviewPage({
           <div
             className="absolute inset-x-10 inset-y-8 rounded-sm border opacity-60"
             style={{ borderColor: cover.gold }}
+          />
+          <Image
+            src="/brand/vellum-mark-gold.png"
+            alt=""
+            aria-hidden="true"
+            width={800}
+            height={800}
+            className="pointer-events-none absolute left-1/2 top-1/2 w-[62%] -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.09]"
           />
           <div className="relative flex h-full flex-col items-center justify-between px-12 py-14 text-center">
             <p

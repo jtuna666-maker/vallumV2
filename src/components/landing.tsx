@@ -16,7 +16,6 @@ import {
   PenLine,
   Printer,
   Quote,
-  Sparkles,
 } from "lucide-react";
 import {
   BULK_BREAKS,
@@ -114,11 +113,14 @@ function HeroBook() {
             <p className="smallcaps text-[0.55rem] text-paper/60">A memoir in twelve chapters</p>
           </div>
           <div>
-            <div className="mx-auto mb-5 size-14 rounded-full border border-[#c9a15c]/50 p-1.5">
-              <div className="grid size-full place-items-center rounded-full border border-[#c9a15c]/30">
-                <Sparkles className="size-5 text-[#c9a15c]" strokeWidth={1.4} />
-              </div>
-            </div>
+            <Image
+              src="/brand/vellum-mark-gold.png"
+              alt=""
+              aria-hidden="true"
+              width={800}
+              height={800}
+              className="mx-auto mb-4 size-20 object-contain opacity-85"
+            />
             <p className="display text-3xl leading-tight font-medium text-[#e8dcc2]">
               The Way<br />It Was
             </p>
@@ -177,7 +179,16 @@ function HeroBook() {
 function Hero() {
   return (
     <section className="paper-edge grain relative overflow-hidden pb-24 pt-36 md:pt-44">
-      <div className="mx-auto grid max-w-6xl items-center gap-16 px-5 lg:grid-cols-[1.15fr_0.85fr]">
+      <Image
+        src="/brand/vellum-mark.png"
+        alt=""
+        aria-hidden="true"
+        width={800}
+        height={800}
+        priority
+        className="pointer-events-none absolute -right-44 top-12 w-[min(88vw,900px)] select-none object-contain opacity-[0.045] mix-blend-multiply"
+      />
+      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-16 px-5 lg:grid-cols-[1.15fr_0.85fr]">
         <div>
           <Reveal>
             <div className="flex flex-wrap items-center gap-2">
@@ -498,6 +509,14 @@ function BookSection() {
               <div className="absolute inset-y-0 left-0 w-4 rounded-l-sm bg-black/40" />
               <div className="flex h-full flex-col items-center justify-center text-center">
                 <p className="smallcaps text-[0.55rem] text-paper/50">VELLUM Press · Volume I</p>
+                <Image
+                  src="/brand/vellum-mark-gold.png"
+                  alt=""
+                  aria-hidden="true"
+                  width={800}
+                  height={800}
+                  className="mt-5 size-16 object-contain opacity-70"
+                />
                 <p className="display mt-6 text-4xl font-medium text-[#e8dcc2]">A Life<br/>in Eras</p>
                 <div className="mt-5 h-px w-14 bg-[#c9a15c]/60" />
                 <p className="display mt-5 text-sm italic text-[#c9a15c]">your story, on the cover</p>

@@ -37,6 +37,12 @@ const BRAND_LOCKUP = path.join(
   "brand",
   "vellum-logo.png"
 );
+const BRAND_MARK = path.join(
+  process.cwd(),
+  "public",
+  "brand",
+  "vellum-mark-gold.png"
+);
 
 export type Binding = "softcover" | "hardcover";
 
@@ -152,6 +158,19 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
     .strokeOpacity(0.55)
     .stroke(palette.accent);
   doc.strokeOpacity(1);
+
+  // The V-and-quill monogram sits beneath the cover typography as a quiet
+  // brand watermark. The transparent artwork remains safely inside Lulu's
+  // casewrap content area.
+  const markSize = 3.25 * PT;
+  doc.save();
+  doc.opacity(0.1);
+  doc.image(BRAND_MARK, fCenter - markSize / 2, wrap + TRIM_H * 0.27, {
+    fit: [markSize, markSize],
+    align: "center",
+    valign: "center",
+  });
+  doc.restore();
 
   doc.font(SERIF).fontSize(9).fillColor(palette.accent);
   doc.text("A MEMOIR", frontX, wrap + TRIM_H * 0.16, {
