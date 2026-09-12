@@ -17,8 +17,8 @@
  *                       nothing. It is also the natural volume item: six
  *                       paperbacks for the grandchildren beats one hardcover
  *                       nobody is allowed to touch.
- *  3. HEIRLOOM ($89)    The hero. Cloth spine, dust jacket, drop caps,
- *                       archival cream stock, hand-tuned margins.
+ *  3. HEIRLOOM ($89)    The hero. Personalized glossy casewrap, drop caps,
+ *                       cream stock, and hand-tuned margins.
  *
  * ── Why bulk discounts stay profitable ──────────────────────────────────
  * Print-on-demand unit economics IMPROVE with quantity: the interior is
@@ -91,18 +91,18 @@ export const EDITIONS: Record<EditionId, Edition> = {
     name: "HEIRLOOM Hardcover",
     tagline: "The one that outlives you.",
     priceCents: 8900,
-    // ~$22 print + ~$7 freight on a 6×9 cloth-bound case wrap
+    // Conservative landed-cost allowance for a 6×9 glossy casewrap hardcover.
     baseCostCents: 2900,
     floorCents: 4350,
     physical: true,
     typeset: "fine",
     features: [
-      "Cloth-bound spine, name in gold",
-      "Custom spine width calculated to your page count",
-      "Printed dust jacket with your dedication",
+      "Personalized glossy casewrap hardcover",
+      "Full-wrap cover and spine sized to your exact page count",
+      "6×9 format with standard black-and-white printing",
+      "Smooth 60# cream uncoated paper",
       "Drop caps, era title pages, hand-tuned margins",
-      "Heavy cream archival paper (60# / 400 PPI)",
-      "Sewn-in ribbon marker",
+      "Dedication page and print-ready PDF included",
     ],
   },
 };

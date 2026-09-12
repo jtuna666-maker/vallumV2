@@ -15,7 +15,7 @@ type Ctx = { params: Promise<{ file: string }> };
  * GET /api/pdf/cover/<projectId>.pdf?edition=heirloom|softcover
  *
  * Renders the full print wrap. The interior is typeset first purely to get an
- * exact page count, which drives the cloth spine width.
+ * exact page count, which drives the casewrap spine width.
  */
 export async function GET(req: Request, ctx: Ctx) {
   const { file } = await ctx.params;

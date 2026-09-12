@@ -14,15 +14,15 @@ import {
 } from "@/lib/pdf/typeset";
 
 /**
- * ── Cloth spine calculator ──────────────────────────────────────────────
+ * ── Casewrap spine calculator ───────────────────────────────────────────
  * Spine width is a function of the real page count and the paper's caliper
  * (pages-per-inch), plus board thickness for a hardcover case.
  *
  *   softcover spine = pages / PPI
  *   hardcover spine = pages / PPI + 2 × board + hinge allowance
  *
- * 60# cream archival stock runs ~400 PPI. Binder boards are ~0.088" each,
- * with ~0.03" of hinge play on a case wrap.
+ * The fallback uses an approximate paper caliper and board allowance. Lulu's
+ * exact manufacturer dimensions replace these values for fulfilled orders.
  */
 export const PPI_CREAM_60 = 400;
 const BOARD = 0.088;
@@ -76,10 +76,10 @@ export function calculateSpine(pageCount: number, binding: Binding): SpineSpec {
   };
 }
 
-const CLOTH: Record<string, { bg: string; foil: string }> = {
-  parchment: { bg: "#6e3a2a", foil: "#d8b06a" },
-  ink: { bg: "#1c1a17", foil: "#c9a15c" },
-  sage: { bg: "#3d4a35", foil: "#cbb172" },
+const COVER_PALETTE: Record<string, { bg: string; accent: string }> = {
+  parchment: { bg: "#6e3a2a", accent: "#d8b06a" },
+  ink: { bg: "#1c1a17", accent: "#c9a15c" },
+  sage: { bg: "#3d4a35", accent: "#cbb172" },
 };
 
 export type CoverInput = {
@@ -94,7 +94,7 @@ export type CoverInput = {
 
 /**
  * Full print-ready wrap: back panel, lettered spine, front panel — sized to
- * the calculated spine so the cloth folds exactly where it should.
+ * the calculated spine so the printed casewrap folds exactly where it should.
  */
 export function renderCover(input: CoverInput): Promise<Buffer> {
   const spec = calculateSpine(input.pageCount, input.binding);
@@ -112,7 +112,7 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
       spineTextAllowed: spinePt >= 0.25 * PT,
     });
   }
-  const cloth = CLOTH[input.project.theme] ?? CLOTH.parchment;
+  const palette = COVER_PALETTE[input.project.theme] ?? COVER_PALETTE.parchment;
 
   const doc = new PDFDocument({
     size: [spec.coverWidthPt, spec.coverHeightPt],
@@ -135,8 +135,8 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
   const H = spec.coverHeightPt;
   const wrap = spec.wrapPt;
 
-  // Cloth field across the entire wrap (bleed included).
-  doc.rect(0, 0, W, H).fill(cloth.bg);
+  // Printed color field across the entire wrap (bleed included).
+  doc.rect(0, 0, W, H).fill(palette.bg);
 
   const backX = wrap;
   const spineX = wrap + TRIM_W;
@@ -150,10 +150,10 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
     .rect(frontX + inset, wrap + inset, TRIM_W - inset * 2, TRIM_H - inset * 2)
     .lineWidth(1.1)
     .strokeOpacity(0.55)
-    .stroke(cloth.foil);
+    .stroke(palette.accent);
   doc.strokeOpacity(1);
 
-  doc.font(SERIF).fontSize(9).fillColor(cloth.foil);
+  doc.font(SERIF).fontSize(9).fillColor(palette.accent);
   doc.text("A MEMOIR", frontX, wrap + TRIM_H * 0.16, {
     width: TRIM_W,
     align: "center",
@@ -170,9 +170,9 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
     .moveTo(fCenter - 30, wrap + TRIM_H * 0.52)
     .lineTo(fCenter + 30, wrap + TRIM_H * 0.52)
     .lineWidth(0.8)
-    .stroke(cloth.foil);
+    .stroke(palette.accent);
 
-  doc.font(SERIF_ITALIC).fontSize(13).fillColor(cloth.foil);
+  doc.font(SERIF_ITALIC).fontSize(13).fillColor(palette.accent);
   doc.text(input.project.authorName, frontX + 0.5 * PT, wrap + TRIM_H * 0.57, {
     width: TRIM_W - PT,
     align: "center",
@@ -204,7 +204,7 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
       characterSpacing: 1.2,
     });
 
-    doc.font(SERIF).fontSize(Math.min(9, spec.spinePt * 0.32)).fillColor(cloth.foil);
+    doc.font(SERIF).fontSize(Math.min(9, spec.spinePt * 0.32)).fillColor(palette.accent);
     doc.text(input.project.authorName.toUpperCase(), sx + sw * 0.66, sy - 2, {
       width: sw * 0.34,
       align: "right",
@@ -231,7 +231,7 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
     .moveTo(backX + TRIM_W / 2 - 24, wrap + TRIM_H * 0.62)
     .lineTo(backX + TRIM_W / 2 + 24, wrap + TRIM_H * 0.62)
     .lineWidth(0.7)
-    .stroke(cloth.foil);
+    .stroke(palette.accent);
 
   // A small publisher's bookplate keeps the full brand lockup faithful to
   // the supplied artwork without competing with the memoir title up front.
@@ -244,7 +244,7 @@ export function renderCover(input: CoverInput): Promise<Buffer> {
     { fit: [brandWidth, brandHeight], align: "center" }
   );
 
-  doc.font(SERIF).fontSize(8).fillColor(cloth.foil);
+  doc.font(SERIF).fontSize(8).fillColor(palette.accent);
   doc.text(
     `Typeset in VELLUM · ${spec.pages} pages · spine ${spec.spineIn.toFixed(3)}"`,
     backX + PT * 0.5,

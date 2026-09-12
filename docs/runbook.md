@@ -20,7 +20,7 @@ request cannot buy below the floor.
 | --- | --- | --- | --- | --- |
 | Standard Digital PDF | **$0** | — | — | `simple` — single-spaced, VELLUM footer every page |
 | Keepsake Softcover | **$39**/copy | ~$13 landed | $19.50 | `fine` — drop caps, tuned margins, no footer |
-| HEIRLOOM Hardcover | **$89**/copy | ~$29 landed | $43.50 | `fine` + cloth spine, dust jacket, archival cream |
+| HEIRLOOM Hardcover | **$89**/copy | ~$29 landed | $43.50 | `fine` + personalized glossy casewrap, 60# cream paper |
 
 **Volume breaks** (apply to every copy in the order):
 

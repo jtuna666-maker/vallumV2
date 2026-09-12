@@ -427,7 +427,7 @@ const STEPS = [
   {
     n: "03",
     title: "Hold the book",
-    body: "Chapters become pages the moment you finish them. Print at home, hand it to your local binder, or order the cloth hardcover when the story feels done.",
+    body: "Chapters become pages the moment you finish them. Print at home, hand the file to a local binder, or order your personalized hardcover when the story feels done.",
   },
 ];
 
@@ -469,18 +469,20 @@ function BookSection() {
               Some things shouldn&apos;t live <span className="italic text-[#c9a15c]">on a screen.</span>
             </h2>
             <p className="mt-6 max-w-lg leading-relaxed text-paper/70">
-              When your twelfth chapter settles, VELLUM typesets your memoir into a cloth hardcover
-              — your name on the spine, a dedication page, each era opening on its own leaf. It is
-              the kind of object grandchildren rescue first.
+              When your twelfth chapter settles, VELLUM typesets your memoir into a personalized
+              6×9 casewrap hardcover — your title and name on a durable full-color cover, a
+              dedication page, and each era opening on its own leaf. It is the kind of object
+              grandchildren rescue first.
             </p>
           </Reveal>
           <Reveal delay={0.15}>
             <ul className="mt-8 space-y-3.5 text-[0.92rem] text-paper/85">
               {[
-                "Cloth-bound hardcover, embossed in gold",
+                "Glossy casewrap hardcover with a personalized front and spine",
+                "Smooth 60# cream paper selected for comfortable long-form reading",
                 "Dedication page written in your words",
                 "Era title pages — Roots, Becoming, Turning Points, Legacy",
-                "Print-ready PDF included, forever",
+                "Professional typesetting and print-ready PDF included",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-3">
                   <Check className="mt-0.5 size-4 shrink-0 text-[#c9a15c]" />
@@ -498,7 +500,7 @@ function BookSection() {
                 <p className="smallcaps text-[0.55rem] text-paper/50">VELLUM Press · Volume I</p>
                 <p className="display mt-6 text-4xl font-medium text-[#e8dcc2]">A Life<br/>in Eras</p>
                 <div className="mt-5 h-px w-14 bg-[#c9a15c]/60" />
-                <p className="display mt-5 text-sm italic text-[#c9a15c]">your name, in gold</p>
+                <p className="display mt-5 text-sm italic text-[#c9a15c]">your story, on the cover</p>
               </div>
             </div>
             <div className="shadow-lift absolute -bottom-8 -right-4 w-48 rotate-2 rounded-lg border border-line bg-vellum p-4 text-ink">
@@ -522,12 +524,12 @@ function Pricing() {
         <Reveal className="mx-auto max-w-2xl text-center">
           <Eyebrow>Simple pricing</Eyebrow>
           <h2 className="display mt-4 text-4xl font-medium leading-tight md:text-5xl">
-            Free to write. <span className="italic text-bronze-deep">Pay only for the object.</span>
+            Free to write. <span className="italic text-bronze-deep">Pay when you want it bound.</span>
           </h2>
           <p className="mt-5 text-ink-soft">
-            The studio costs nothing and the digital book is free forever. Choose a printed
-            edition only when the story feels finished — and order a stack for the family at a
-            real discount.
+            The studio and digital book are free forever. A printed edition includes personalized
+            cover production, fine book typesetting, file preparation, printing, and shipping —
+            with family-set discounts when you want more than one.
           </p>
         </Reveal>
 
