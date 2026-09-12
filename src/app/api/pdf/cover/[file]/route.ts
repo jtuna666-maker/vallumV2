@@ -3,6 +3,7 @@ import { renderInterior } from "@/lib/pdf/interior";
 import { renderCover } from "@/lib/pdf/cover";
 import { idFromFile, loadBook, mayRenderPdf } from "@/lib/pdf/source";
 import { EDITIONS, isEditionId } from "@/lib/pricing";
+import { getCoverDimensions, isLuluConfigured } from "@/lib/lulu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +50,13 @@ export async function GET(req: Request, ctx: Ctx) {
     project: book.project,
     pageCount: pages,
     binding: editionId === "softcover" ? "softcover" : "hardcover",
+    dimensions: isLuluConfigured()
+      ? await getCoverDimensions(
+          pages,
+          editionId === "softcover" ? "softcover" : "heirloom",
+          url.searchParams.get("sandbox") === "1" ? "sandbox" : undefined
+        )
+      : undefined,
   });
 
   const safeTitle =

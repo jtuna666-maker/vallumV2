@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     const origin = new URL(req.url).origin;
     const key = printKey(projectId);
     const edition = order.edition === "softcover" ? "softcover" : "heirloom";
-    const pdfQuery = `edition=${edition}&k=${encodeURIComponent(key)}`;
+    const pdfQuery = `edition=${edition}&k=${encodeURIComponent(key)}${event.livemode ? "" : "&sandbox=1"}`;
 
     console.log(`[vellum] Payment received for order ${order.id}; creating Lulu print job.`);
     const luluJobId = await createPrintJob({

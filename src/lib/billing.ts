@@ -54,6 +54,8 @@ export async function createBookCheckout(args: {
     // Checkout for this session regardless of the account-level default.
     managed_payments: { enabled: false },
     customer_email: args.email || undefined,
+    // Lulu's shipping carriers require a contact phone number.
+    phone_number_collection: { enabled: true },
     shipping_address_collection: {
       allowed_countries: ["US", "CA", "GB", "AU", "NZ", "IE"],
     },

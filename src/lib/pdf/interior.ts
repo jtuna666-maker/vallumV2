@@ -340,7 +340,7 @@ function colophon(ctx: Ctx, project: Project, words: number, editionLabel: strin
 
   doc.font(SERIF).fontSize(9.5).fillColor(MUTED);
   doc.text(
-    `Set in Times and typeset by VELLUM. These ${words.toLocaleString()} words belong to ${project.authorName}, forever.`,
+    `Set in Crimson Text and typeset by VELLUM. These ${words.toLocaleString()} words belong to ${project.authorName}, forever.`,
     left + width * 0.1,
     TRIM_H * 0.55,
     { width: width * 0.8, align: "center" }
@@ -387,7 +387,7 @@ export async function renderInterior(
       Title: input.project.title,
       Author: input.project.authorName,
       Creator: "VELLUM",
-      Producer: "VELLUM — vellum.com",
+      Producer: "VELLUM — myvellum.vercel.app",
       Subject: `${input.editionLabel} — a memoir typeset by VELLUM`,
     },
   }) as Doc;
@@ -425,6 +425,11 @@ export async function renderInterior(
   }
 
   colophon(ctx, input.project, words, input.editionLabel);
+  // Physical books need a whole number of leaves. Add only the final verso;
+  // never silently pad an empty manuscript to a printable book.
+  if (options.profile === "fine" && doc.bufferedPageRange().count % 2 !== 0) {
+    newPage(ctx, { blankRunningHead: true });
+  }
   stampEveryPage(doc, profile);
 
   const pages = doc.bufferedPageRange().count;

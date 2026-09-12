@@ -1,5 +1,6 @@
 import "server-only";
 import type PDFDocument from "pdfkit";
+import path from "path";
 
 export type Doc = InstanceType<typeof PDFDocument>;
 
@@ -8,9 +9,11 @@ export const PT = 72;
 export const TRIM_W = 6 * PT;
 export const TRIM_H = 9 * PT;
 
-export const SERIF = "Times-Roman";
-export const SERIF_ITALIC = "Times-Italic";
-export const SERIF_BOLD = "Times-Bold";
+// Embed licensed font files: printer validation cannot rely on a reader's
+// substitute for PDF's unembedded standard Times fonts.
+export const SERIF = path.join(process.cwd(), "public/fonts/crimson-text/CrimsonText-Regular.ttf");
+export const SERIF_ITALIC = path.join(process.cwd(), "public/fonts/crimson-text/CrimsonText-Italic.ttf");
+export const SERIF_BOLD = path.join(process.cwd(), "public/fonts/crimson-text/CrimsonText-Bold.ttf");
 
 /** Muted palette — the footer must never compete with the memoir text. */
 export const INK = "#221b12";

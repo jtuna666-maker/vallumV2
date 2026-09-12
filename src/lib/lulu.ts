@@ -37,14 +37,45 @@ export function isLuluConfigured(): boolean {
 }
 
 /**
- * 6×9, B&W interior on 60# cream (444 = uncoated white/cream, 060 = 60#).
- *  · HC = case-laminate hardcover for the HEIRLOOM edition
+ * 6×9, B&W interior on 60# cream (UC = uncoated cream, 060 = 60#).
+ *  · CW = case-wrap hardcover for the HEIRLOOM edition
  *  · PB = perfect-bound paperback for the Keepsake Softcover
  */
 const HARDCOVER_PACKAGE =
-  process.env.LULU_PACKAGE_ID ?? "0600X0900BWSTDHC060UW444GXX";
+  process.env.LULU_PACKAGE_ID ?? "0600X0900.BW.STD.CW.060UC444.GXX";
 const SOFTCOVER_PACKAGE =
-  process.env.LULU_PACKAGE_ID_SOFT ?? "0600X0900BWSTDPB060UW444MXX";
+  process.env.LULU_PACKAGE_ID_SOFT ?? "0600X0900.BW.STD.PB.060UC444.MXX";
+
+export function luluPackageId(binding: "softcover" | "heirloom"): string {
+  return binding === "softcover" ? SOFTCOVER_PACKAGE : HARDCOVER_PACKAGE;
+}
+
+/** Use the manufacturer's dimensions, not an approximate paper caliper. */
+export async function getCoverDimensions(
+  pageCount: number,
+  binding: "softcover" | "heirloom",
+  environment?: LuluEnvironment
+): Promise<{ width: number; height: number }> {
+  const token = await getToken(environment);
+  const res = await fetch(`${baseUrl(environment)}/cover-dimensions/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      pod_package_id: luluPackageId(binding),
+      interior_page_count: pageCount,
+      unit: "pt",
+    }),
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) throw new Error(`Lulu cover dimensions failed: ${res.status} ${(await res.text()).slice(0, 500)}`);
+  const data = await res.json() as { width: string; height: string };
+  const width = Number(data.width);
+  const height = Number(data.height);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    throw new Error("Lulu returned invalid cover dimensions");
+  }
+  return { width, height };
+}
 
 const cachedTokens = new Map<string, { token: string; expiresAt: number }>();
 
@@ -118,7 +149,7 @@ export async function createPrintJob(args: {
         state_code: args.address.stateCode,
         postcode: args.address.postcode,
         country_code: args.address.countryCode,
-        phone_number: args.address.phoneNumber ?? "",
+        phone_number: args.address.phoneNumber || undefined,
       },
       line_items: [
         {
@@ -128,8 +159,7 @@ export async function createPrintJob(args: {
           printable_normalization: {
             cover: { source_url: args.coverUrl },
             interior: { source_url: args.interiorUrl },
-            pod_package_id:
-              args.binding === "softcover" ? SOFTCOVER_PACKAGE : HARDCOVER_PACKAGE,
+            pod_package_id: luluPackageId(args.binding ?? "heirloom"),
           },
         },
       ],
@@ -137,7 +167,7 @@ export async function createPrintJob(args: {
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(`Lulu print-job failed: ${res.status} ${detail.slice(0, 200)}`);
+    throw new Error(`Lulu print-job failed: ${res.status} ${detail.slice(0, 1500)}`);
   }
   const data = (await res.json()) as { id?: number | string };
   return String(data.id ?? "");

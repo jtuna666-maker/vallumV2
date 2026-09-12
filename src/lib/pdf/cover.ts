@@ -86,6 +86,8 @@ export type CoverInput = {
   project: Project;
   pageCount: number;
   binding: Binding;
+  /** Exact full-wrap dimensions supplied by Lulu, in print points. */
+  dimensions?: { width: number; height: number };
   /** Blurb for the back panel (usually the dedication or an excerpt). */
   blurb?: string;
 };
@@ -96,6 +98,20 @@ export type CoverInput = {
  */
 export function renderCover(input: CoverInput): Promise<Buffer> {
   const spec = calculateSpine(input.pageCount, input.binding);
+  if (input.dimensions) {
+    const wrapPt = (input.dimensions.height - TRIM_H) / 2;
+    const spinePt = input.dimensions.width - TRIM_W * 2 - wrapPt * 2;
+    if (wrapPt < 0 || spinePt <= 0) throw new Error("Invalid full-wrap geometry");
+    Object.assign(spec, {
+      pages: input.pageCount,
+      coverWidthPt: input.dimensions.width,
+      coverHeightPt: input.dimensions.height,
+      wrapPt,
+      spinePt,
+      spineIn: spinePt / PT,
+      spineTextAllowed: spinePt >= 0.25 * PT,
+    });
+  }
   const cloth = CLOTH[input.project.theme] ?? CLOTH.parchment;
 
   const doc = new PDFDocument({
