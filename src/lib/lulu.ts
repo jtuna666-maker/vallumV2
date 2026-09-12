@@ -117,6 +117,56 @@ export type LuluAddress = {
   phoneNumber?: string;
 };
 
+type LuluShippingOption = {
+  level: string;
+  cost_excl_tax: number | string;
+  is_active: boolean;
+};
+
+/** Ask Lulu which shipping levels are actually available for this book/address. */
+async function getShippingLevel(args: {
+  address: LuluAddress;
+  pageCount: number;
+  quantity: number;
+  podPackageId: string;
+  environment?: LuluEnvironment;
+}): Promise<string> {
+  const res = await fetch(`${baseUrl(args.environment)}/shipping-options/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      currency: "USD",
+      line_items: [
+        {
+          page_count: args.pageCount,
+          pod_package_id: args.podPackageId,
+          quantity: args.quantity,
+        },
+      ],
+      shipping_address: {
+        name: args.address.name,
+        street1: args.address.street1,
+        street2: args.address.street2 ?? "",
+        city: args.address.city,
+        state: args.address.stateCode,
+        postcode: args.address.postcode,
+        country: args.address.countryCode,
+        phone_number: args.address.phoneNumber || undefined,
+      },
+    }),
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) {
+    throw new Error(`Lulu shipping-options failed: ${res.status} ${(await res.text()).slice(0, 500)}`);
+  }
+  const options = (await res.json()) as LuluShippingOption[];
+  const available = options
+    .filter((option) => option.is_active && option.level)
+    .sort((a, b) => Number(a.cost_excl_tax) - Number(b.cost_excl_tax));
+  if (!available[0]) throw new Error("Lulu returned no shipping options for this address");
+  return available[0].level;
+}
+
 export async function createPrintJob(args: {
   orderId: string;
   title: string;
@@ -125,12 +175,22 @@ export async function createPrintJob(args: {
   address: LuluAddress;
   interiorUrl: string;
   coverUrl: string;
+  pageCount: number;
   quantity?: number;
   binding?: "softcover" | "heirloom";
   /** Force a target for this job. Test Stripe events always pass "sandbox". */
   environment?: LuluEnvironment;
 }): Promise<string> {
   const token = await getToken(args.environment);
+  const quantity = Math.max(1, args.quantity ?? 1);
+  const podPackageId = luluPackageId(args.binding ?? "heirloom");
+  const shippingLevel = await getShippingLevel({
+    address: args.address,
+    pageCount: args.pageCount,
+    quantity,
+    podPackageId,
+    environment: args.environment,
+  });
   const res = await fetch(`${baseUrl(args.environment)}/print-jobs/`, {
     method: "POST",
     headers: {
@@ -140,7 +200,7 @@ export async function createPrintJob(args: {
     body: JSON.stringify({
       contact_email: args.contactEmail,
       external_id: `vellum-${args.orderId}`,
-      shipping_level: "GROUND",
+      shipping_level: shippingLevel,
       shipping_address: {
         name: args.address.name,
         street1: args.address.street1,
@@ -155,11 +215,11 @@ export async function createPrintJob(args: {
         {
           external_id: `vellum-${args.orderId}-book`,
           title: args.title,
-          quantity: Math.max(1, args.quantity ?? 1),
+          quantity,
           printable_normalization: {
             cover: { source_url: args.coverUrl },
             interior: { source_url: args.interiorUrl },
-            pod_package_id: luluPackageId(args.binding ?? "heirloom"),
+            pod_package_id: podPackageId,
           },
         },
       ],

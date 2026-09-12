@@ -3,9 +3,11 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { printOrders, projects } from "@/db/schema";
+import { printOrders } from "@/db/schema";
 import { createPrintJob, isLuluConfigured } from "@/lib/lulu";
-import { printKey } from "@/lib/pdf/source";
+import { renderInterior } from "@/lib/pdf/interior";
+import { loadBook, printKey } from "@/lib/pdf/source";
+import { EDITIONS } from "@/lib/pricing";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "dummy_key");
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
@@ -66,12 +68,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    const [project] = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, projectId))
-      .limit(1);
-    if (!project) throw new Error(`Project ${projectId} was not found`);
+    const book = await loadBook(projectId);
+    if (!book) throw new Error(`Project ${projectId} was not found`);
+    const project = book.project;
 
     const shipping = session.collected_information?.shipping_details;
     const address = shipping?.address;
@@ -103,6 +102,14 @@ export async function POST(req: Request) {
     const origin = new URL(req.url).origin;
     const key = printKey(projectId);
     const edition = order.edition === "softcover" ? "softcover" : "heirloom";
+    const { pages } = await renderInterior(
+      {
+        project,
+        chapters: book.chapters,
+        editionLabel: EDITIONS[edition].name,
+      },
+      { profile: EDITIONS[edition].typeset, writtenOnly: true }
+    );
     const pdfQuery = `edition=${edition}&k=${encodeURIComponent(key)}${event.livemode ? "" : "&sandbox=1"}`;
 
     console.log(`[vellum] Payment received for order ${order.id}; creating Lulu print job.`);
@@ -123,6 +130,7 @@ export async function POST(req: Request) {
       },
       interiorUrl: `${origin}/api/pdf/interior/${projectId}.pdf?${pdfQuery}`,
       coverUrl: `${origin}/api/pdf/cover/${projectId}.pdf?${pdfQuery}`,
+      pageCount: pages,
       quantity: order.quantity,
       binding: edition,
       // A Stripe test event must never create a live print order, even if the
@@ -150,3 +158,4 @@ export async function POST(req: Request) {
 }
 
 export const runtime = "nodejs";
+export const maxDuration = 60;

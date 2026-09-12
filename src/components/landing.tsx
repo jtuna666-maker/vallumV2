@@ -850,10 +850,10 @@ function CreatorStory() {
           </h2>
           <div className="prose-book mt-7 max-w-xl text-[1.02rem] leading-relaxed text-ink-soft space-y-4">
             <p>
-              Hi, I'm Jesse. Like many of you, I've always been drawn to the history locked in people's memories.
+              Hi, I’m Jesse. Like many of you, I’ve always been drawn to the history locked in people’s memories.
             </p>
             <p>
-              But some stories I would have given anything to hear are now permanently beyond my reach. It's an absence that has stuck with me—a piece of family heritage lost forever just because nobody wrote it down.
+              But some stories I would have given anything to hear are now permanently beyond my reach. It’s an absence that has stuck with me—a piece of family heritage lost forever just because nobody wrote it down.
             </p>
             <p>
               That’s why I created Vellum. Not as another complicated project, but as a simple, thoughtful environment where any voice can quickly and easily build a lasting memoir. Every life has a spine; this just helps you typeset it.
