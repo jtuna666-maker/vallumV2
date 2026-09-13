@@ -1,5 +1,5 @@
 import "server-only";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureDatabaseSchema } from "@/db/bootstrap";
 import { projectMembers, projects, users } from "@/db/schema";
@@ -34,13 +34,14 @@ export async function ensureBootstrap(canWriteCookies = false): Promise<void> {
   try {
     await ensureDatabaseSchema();
 
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(projects);
-
     const single = process.env.VELLUM_SINGLE_USER === "1";
     const ambient = process.env.VELLUM_AMBIENT !== "0";
-    if (count === 0 && !single && !ambient) return;
+
+    // A public SaaS deployment has no shared household to seed, adopt, or
+    // receive orphaned projects. Keep every unauthenticated request outside
+    // the shared demo path entirely.
+    if (!single && !ambient) return;
+
     const [demo] = await db
       .select()
       .from(users)

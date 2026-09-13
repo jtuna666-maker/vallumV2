@@ -115,6 +115,16 @@ export const currentUser = cache(async (): Promise<User | null> => {
   }
   const cookieStore = await cookies();
   if (cookieStore.get("vellum_signed_out")) return null;
+
+  // Public SaaS deployments must never fall back to the shared showcase
+  // household. Only preview/showcase or explicit single-household installs
+  // may adopt the ambient demo account.
+  if (
+    process.env.VELLUM_AMBIENT === "0" &&
+    process.env.VELLUM_SINGLE_USER !== "1"
+  ) {
+    return null;
+  }
   return ambientDemoUser();
 });
 
